@@ -5,7 +5,7 @@
       :key="columnIndex"
       class="waterfall-column"
       :style="{ marginRight: columnIndex < count - 1 ? `${gap}px` : 0 }"
-      :ref="el => columnRefs[columnIndex] = el"
+      :ref="el => { if (el) columnRefs[columnIndex] = el }"
     >
       <div 
         v-for="item in column" 
@@ -23,7 +23,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, defineProps, onMounted, onUnmounted } from 'vue'
+
+// 定义组件名称
+const name = 'Waterfall'
 
 // 定义props
 const props = defineProps({
@@ -66,7 +69,7 @@ const containerStyle = computed(() => {
 
 // 设置项目引用
 const setItemRef = (el, columnIndex, itemIndex) => {
-  if (el) {
+  if (el && columnIndex !== undefined && itemIndex !== undefined) {
     const key = `${columnIndex}-${itemIndex}`
     itemRefs.value.set(key, el)
   }
@@ -77,6 +80,8 @@ const initColumns = () => {
   columns.value = Array(props.count).fill().map(() => [])
   columnHeights.value = Array(props.count).fill(0)
   itemRefs.value.clear()
+  // 初始化列引用数组
+  columnRefs.value = Array(props.count).fill(null)
 }
 
 // 获取最矮列的索引
@@ -105,25 +110,26 @@ const updateColumnRealHeights = async () => {
   
   // 更新每列的真实高度
   columnHeights.value = columnRefs.value.map(colRef => {
-    return colRef ? colRef.offsetHeight : 0
+    return colRef && colRef.offsetHeight ? colRef.offsetHeight : 0
   })
 }
 
 // 重新布局项目
 const layoutItems = async () => {
-  initColumns()
-  
-  if (props.list.length === 0) {
-    return
+  try {
+    initColumns()
+    if (!props.list || props.list.length === 0) {
+      return
+    }
+    // 首先将所有项目按照瀑布流算法分配到各列
+    props.list.forEach((item, index) => {
+      addItemToShortestColumn(item, index)
+    })
+    // 等待DOM更新后更新真实高度
+    await updateColumnRealHeights()
+  } catch (error) {
+    console.warn('Waterfall layout error:', error)
   }
-  
-  // 首先将所有项目按照瀑布流算法分配到各列
-  props.list.forEach((item, index) => {
-    addItemToShortestColumn(item, index)
-  })
-  
-  // 等待DOM更新后更新真实高度
-  await updateColumnRealHeights()
 }
 
 // 监听list变化
