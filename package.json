@@ -1,0 +1,32 @@
+{
+  "name": "vue3-waterfall-x",
+  "private": false,
+  "version": "0.0.1",
+  "type": "module",
+  "author": "xianghy",
+	"license": "MIT",
+	"main": "dist/vue3-waterfall-x.js",
+  "module": "dist/vue3-waterfall-x.umd.cjs",
+  "files": [
+		"package.json",
+		"README.md",
+		"dist"
+	],
+  "description": "vue3简易配置实现瀑布流效果，支持动态新增数据",
+  "keywords": [
+		"瀑布流",
+    "vue3瀑布流"
+	],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.24"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.2.2"
+  }
+}
